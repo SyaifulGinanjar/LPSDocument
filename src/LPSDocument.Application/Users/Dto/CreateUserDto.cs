@@ -33,6 +33,7 @@ namespace LPSDocument.Users.Dto
 
         [Required]
         [StringLength(AbpUserBase.MaxPlainPasswordLength)]
+        [RegularExpression("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")]
         [DisableAuditing]
         public string Password { get; set; }
 

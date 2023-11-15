@@ -14,6 +14,8 @@ using LPSDocument.Authorization;
 using LPSDocument.Authorization.Users;
 using LPSDocument.Models.TokenAuth;
 using LPSDocument.MultiTenancy;
+using LPSDocument.Users.Dto;
+using LPSDocument.Users;
 
 namespace LPSDocument.Controllers
 {
@@ -24,17 +26,20 @@ namespace LPSDocument.Controllers
         private readonly ITenantCache _tenantCache;
         private readonly AbpLoginResultTypeHelper _abpLoginResultTypeHelper;
         private readonly TokenAuthConfiguration _configuration;
+        private readonly IUserAppService _appService;
 
         public TokenAuthController(
             LogInManager logInManager,
             ITenantCache tenantCache,
             AbpLoginResultTypeHelper abpLoginResultTypeHelper,
-            TokenAuthConfiguration configuration)
+            TokenAuthConfiguration configuration,
+            IUserAppService iAppService)
         {
             _logInManager = logInManager;
             _tenantCache = tenantCache;
             _abpLoginResultTypeHelper = abpLoginResultTypeHelper;
             _configuration = configuration;
+            _appService = iAppService;
         }
 
         [HttpPost]
@@ -55,6 +60,23 @@ namespace LPSDocument.Controllers
                 ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
                 UserId = loginResult.User.Id
             };
+        }
+
+        [HttpPost("/api/user/register")]
+        public async Task<IActionResult> Register([FromBody] CreateUserDto userDto)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    return Ok(await _appService.CreateAsync(userDto));
+                }
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         private string GetTenancyNameOrNull()
